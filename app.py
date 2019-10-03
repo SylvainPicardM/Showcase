@@ -34,13 +34,23 @@ def get_exp_details(exp_name):
                       .where(Experiment.experiment_name == exp_name))
     runs = []
     for res in query.dicts():
-        run = {}
+        run = {
+            'parameters': {},
+            'scores': {}
+        }
         run['experiment_name'] = res['experiment_name'] 
         run['id_experiment'] = res['id_experiment'] 
+
+        # Get parameters
         query_param = Parameter.select().where(Parameter.experiment == run['id_experiment'])
         for res_param in query_param.dicts():
-            print(res_param)
-            run[res_param['parameter_name']] = res_param['parameter']
+            run['parameters'][res_param['parameter_name']] = res_param['parameter']
+
+        # Get scores
+        query_score = Score.select().where(Score.experiment == run['id_experiment'])
+        for res_score in query_score.dicts():
+            run['scores'][res_score['type_score']] = res_score['score']
+
         runs.append(run)
     data['runs'] = runs
     return jsonify(data)
