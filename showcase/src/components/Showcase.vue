@@ -1,35 +1,45 @@
 <template>
   <div class="container">
+    <!-- HEADER -->
     <div class="jumbotron jumbotron-fluid">
       <div class="container">
         <h1 class="display-4">Showcase</h1>
-          <p class="lead">Choose a run in list below</p>
       </div>
     </div>
-      <div class="form-row">
-        <div class="col">
-          <select v-model="selected_exp" 
-                  v-on:change="getExpDetails()" 
-                  id="selectRun" class="form-control">
-              <option v-for="name in names" v-bind:key="name">
-                  {{ name }}
-              </option>
-          </select>
-        </div>
-        <div class="col">
-          <select v-model="selected_score"
-                  v-on:change="sortTables()"   
-                  id="selectParam" class="form-control">
-            <option disabled value="">Choose Score for sorting tables</option>
-            <option v-for="score in get_scores_names" :key="score">
-              {{ score }}
+    <!-- SELECT RUN AND SORT -->
+    <div class="form-row">
+      <div class="col">
+        <select v-model="selected_exp" 
+                v-on:change="getExpDetails()" 
+                id="selectRun" class="form-control">
+            <option v-for="name in names" v-bind:key="name">
+                {{ name }}
             </option>
-          </select>
-        </div>
+        </select>
       </div>
-      <hr>
-      <div v-if="exp_runs.length > 0">
-        <!-- TABLES RESULTATS -->
+      <div class="col">
+        <select v-model="selected_score"
+                id="selectParam" class="form-control">
+          <option disabled value="">Choose Score for sorting tables</option>
+          <option v-for="score in get_scores_names" :key="score">
+            {{ score }}
+          </option>
+        </select>
+      </div>
+      <div class="col">
+        <select v-model="selected_param"
+                id="selectParam" class="form-control">
+          <option disabled value="">Choose Parameter for sorting tables</option>
+          <option v-for="param in get_params_names" :key="param">
+            {{ param }}
+          </option>
+        </select>
+      </div>
+    </div>
+    <hr>
+    <div v-if="exp_runs.length > 0">
+      <!-- TABLES RESULTATS -->
+      <div id="result-tables">
         <table class="table table-sm table-hover">
             <thead class="thead-dark">
                 <tr>
@@ -59,6 +69,21 @@
             </tbody>
         </table>
       </div>
+      <hr>
+      <div id="graphs">
+        <div class="form-row">
+          <div class="col-4">
+            <select v-model="selected_param"
+                    id="selectParam" class="form-control">
+              <option disabled value="">Choose Parameter to generate graphs</option>
+              <option v-for="param in get_params_names" :key="param">
+                {{ param }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <style>
@@ -71,10 +96,14 @@
 .table th, td{
   text-align: center;
 }
+div{
+  margin-bottom: 10px;
+}
 </style>
 
 <script>
 import axios from 'axios';
+var _ = require('lodash');
 
 export default {
   name: 'Showcase',
@@ -83,6 +112,7 @@ export default {
       names: [],
       selected_exp: '',
       selected_score: '',
+      selected_param: '',
       exp_runs: [],
       select_run: '',
     };
@@ -106,11 +136,6 @@ export default {
         });
       }
     },
-    sortTables(){
-      if (this.selected_score != ''){
-        this.exp_runs.sort(compareValues(this.selected_score))
-      }
-    }
   },
   computed: {
     get_params_names() {
@@ -128,40 +153,27 @@ export default {
       }
     },
   },
-  created() {
-    this.getExpNames();
+  watch: {
+    selected_score(newScore, oldScore) {
+      if (newScore != ''){
+        this.selected_param = '';
+        this.exp_runs = _.orderBy(this.exp_runs, function(a) { return a.scores[newScore] }, ['desc']);
+      }
+    },
+    selected_param(newParam, oldParam) {
+      if (newParam != ''){
+        this.selected_score = '';
+        this.exp_runs = _.orderBy(this.exp_runs, function(a) { return a.parameters[newParam] }, ['desc']);
+      }
+    },
   },
   filters: {
     round(number) {
       return number.toPrecision(3)
     },
   },
+  created() {
+    this.getExpNames();
+  },
 };
-
-
-
-// function for dynamic sorting
-function compareValues(key, order='asc') {
-  return function(a, b) {
-    if(!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
-      // property doesn't exist on either object
-      return 0;
-    }
-
-    const varA = (typeof a[key] === 'string') ?
-      a[key].toUpperCase() : a[key];
-    const varB = (typeof b[key] === 'string') ?
-      b[key].toUpperCase() : b[key];
-
-    let comparison = 0;
-    if (varA > varB) {
-      comparison = 1;
-    } else if (varA < varB) {
-      comparison = -1;
-    }
-    return (
-      (order == 'desc') ? (comparison * -1) : comparison
-    );
-  };
-}
 </script>
