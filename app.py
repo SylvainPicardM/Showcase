@@ -56,6 +56,11 @@ def get_exp_details(exp_name):
     return jsonify(data)
 
 
+@app.route('/delete_exp/<exp_id>', methods=['GET'])
+def delete_run(exp_id):
+    data = {"id": exp_id}
+    n = Experiment.delete().where(Experiment.id_experiment == exp_id).execute()
+    return jsonify(data)
 
 
 if __name__ == "__main_":
