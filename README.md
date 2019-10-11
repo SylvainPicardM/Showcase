@@ -1,9 +1,13 @@
 # Showcase
 
-Run flask, from Showcase dir:
+Run flask:
 
-env FLASK_APP=app.py flask run
+```bash
+/home/sylvain.picard/Showcase/ env FLASK_APP=app.py flask run
+```
 
 Run npm server, from Showcase/showcase!
 
-npm run serve
+```bash
+/home/sylvain.picard/Showcase/showcase npm run serve
+```
